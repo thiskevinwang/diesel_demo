@@ -5,5 +5,6 @@ CREATE TABLE posts
   id SERIAL PRIMARY KEY,
   title VARCHAR NOT NULL,
   body TEXT NOT NULL,
+  -- 'f' equals false
   published BOOLEAN NOT NULL DEFAULT 'f'
 )
