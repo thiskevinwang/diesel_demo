@@ -7,14 +7,17 @@ use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
 
+// if you hover over `models`, it allows you
+// to cmd+click into `src/models.rs`
+// - How?
 pub mod models;
 /**
  * ... in schema.rs
- * 
- * The table! macro creates a bunch of code 
+ *
+ * The table! macro creates a bunch of code
  * based on the datbase schema to represent
  * all of the tables and columns.
- * 
+ *
  * Any time we run or revert a migration,
  * this file will get automatically updated
  */
