@@ -21,7 +21,7 @@ There a some pieces of tech, built on Rust that I'd like to understand.
 
 ### Random Findings
 
-<details open>
+<details>
 <summary>Closure Syntax</summary>
 
 ```ts
@@ -64,6 +64,16 @@ fn main() {
 }
 // Time elapsed: 925ns
 ```
+
+</details>
+
+<details open>
+<summary>Node/Rust similarities</summary>
+ 
+|Node|Rust|
+|:---|:---|
+|npm|cargo|
+|nodemon|[cargo-watch](https://docs.rs/crate/cargo-watch/7.0.2)|
 
 </details>
 
