@@ -81,6 +81,10 @@ fn main() {
 
 https://www.heroku.com/podcasts/codeish/34-an-introduction-to-rust
 
+SE Daily: [JavaScript Deployments with Brian LeRoux](https://softwareengineeringdaily.com/2020/03/04/javascript-deployments-with-brian-leroux/)
+
+- [mentions Firecracker](https://softwareengineeringdaily.com/wp-content/uploads/2020/03/SED1018-Begin-Brian-LeRoux.pdf)
+
 ## Outstanding Questions
 
 - [ ] How do you deploy a Rust application?

@@ -1,5 +1,11 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use listenfd::ListenFd;
+// use std::sync::Mutex;
+
+// This struct represents state
+struct AppState {
+    app_name: String,
+}
 
 /// a request handler
 /// an async function that accepts zero or more params that
@@ -7,8 +13,13 @@ use listenfd::ListenFd;
 ///
 /// returns a type that can be converted into an
 /// `HttpResponse` (ie, `impl Responder`)
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Hello from Actix!")
+async fn index(data: web::Data<AppState>) -> impl Responder {
+    // HttpResponse::Ok().body("Hello from Actix!")
+    let app_name = &data.app_name;
+
+    format!("Hello {}!", app_name)
+    // May get response:
+    // App data is not configured, to configure use App::data()
 }
 
 async fn index2() -> impl Responder {
@@ -34,8 +45,12 @@ async fn main() -> std::io::Result<()> {
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(|| {
         App::new()
+            .data(AppState {
+                app_name: String::from("MY APP BOI"),
+            })
             .route("/", web::get().to(index))
             .route("/again", web::get().to(index2))
+            .service(web::scope("/app").route("hi", web::get().to(index)))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
