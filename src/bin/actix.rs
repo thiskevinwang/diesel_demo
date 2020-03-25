@@ -1,10 +1,10 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use listenfd::ListenFd;
-// use std::sync::Mutex;
+use std::sync::Mutex;
 
 // This struct represents state
-struct AppState {
-    app_name: String,
+struct AppStateWithCounter {
+    counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
 }
 
 /// a request handler
@@ -13,11 +13,12 @@ struct AppState {
 ///
 /// returns a type that can be converted into an
 /// `HttpResponse` (ie, `impl Responder`)
-async fn index(data: web::Data<AppState>) -> impl Responder {
+async fn index(data: web::Data<AppStateWithCounter>) -> impl Responder {
     // HttpResponse::Ok().body("Hello from Actix!")
-    let app_name = &data.app_name;
+    let mut counter = data.counter.lock().unwrap(); // <- get counter's MutexGuard
+    *counter += 1; // <- access counter inside MutexGuard
 
-    format!("Hello {}!", app_name)
+    format!("Request number: {}", counter)
     // May get response:
     // App data is not configured, to configure use App::data()
 }
@@ -42,12 +43,16 @@ async fn index2() -> impl Responder {
 /// ```   
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    let data = web::Data::new(AppStateWithCounter {
+        counter: Mutex::new(0),
+    });
+
     let mut listenfd = ListenFd::from_env();
-    let mut server = HttpServer::new(|| {
+    let mut server = HttpServer::new(move || {
+        // move counter into the closure
         App::new()
-            .data(AppState {
-                app_name: String::from("MY APP BOI"),
-            })
+            // .data(data.clone()) ??
+            .app_data(data.clone())
             .route("/", web::get().to(index))
             .route("/again", web::get().to(index2))
             .service(web::scope("/app").route("hi", web::get().to(index)))
@@ -56,7 +61,10 @@ async fn main() -> std::io::Result<()> {
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l)?
     } else {
-        server.bind("127.0.0.1:7878")?
+        let host: &str = "127.0.0.1";
+        let port = 7878;
+        let url = format!("{}:{}", host, port);
+        server.bind(url)?
     };
 
     server.run().await
