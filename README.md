@@ -9,6 +9,7 @@ I don't want to learn C-anything.
 There a some pieces of tech, built on Rust that I'd like to understand.
 
 - [Deno](https://deno.land/)
+- [Tokio](https://tokio.rs/)
 - [AWS Firecracker](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/)
 
 ## Topics
