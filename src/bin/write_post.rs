@@ -1,7 +1,7 @@
 extern crate diesel;
-extern crate diesel_demo;
+extern crate rust_server;
 
-use self::diesel_demo::*;
+use self::rust_server::*;
 use std::io::{stdin, Read};
 
 /// run with `cargo run --bin write_post`

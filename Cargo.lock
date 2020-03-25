@@ -473,17 +473,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "diesel_demo"
-version = "0.1.0"
-dependencies = [
- "actix-rt",
- "actix-web",
- "diesel",
- "dotenv",
- "listenfd",
-]
-
-[[package]]
 name = "diesel_derives"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1210,6 +1199,17 @@ checksum = "11834e137f3b14e309437a8276714eed3a80d1ef894869e510f2c0c0b98b9f4a"
 dependencies = [
  "hostname",
  "quick-error",
+]
+
+[[package]]
+name = "rust_server"
+version = "0.1.0"
+dependencies = [
+ "actix-rt",
+ "actix-web",
+ "diesel",
+ "dotenv",
+ "listenfd",
 ]
 
 [[package]]

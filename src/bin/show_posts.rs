@@ -1,13 +1,13 @@
-// this enables `use self::diesel::prelud::*;`
+// this enables `use self::diesel::prelude::*;`
 extern crate diesel;
-// this enables `use self::diesel_demo::*;`
-extern crate diesel_demo;
+// this enables `use self::rust_server::*;`
+extern crate rust_server;
 
 // this brings `.filter()` & `.eq()` into scope
 use self::diesel::prelude::*;
 // this enables `use self::models::*;`
 // this also brings `establish_connection()` into scope
-use self::diesel_demo::*;
+use self::rust_server::*;
 // this brings `Post` into scope
 use self::models::*;
 
@@ -21,9 +21,9 @@ fn main() {
      * It's useful when we're only dealing with a single
      * table, but that's not always what we want.
      */
-    // hover over diesel_demo
+    // hover over rust_server
     // - displays 'src/lib.rs'
-    use diesel_demo::schema::posts::dsl::*;
+    use rust_server::schema::posts::dsl::*;
 
     let connection = establish_connection();
     let results = posts
