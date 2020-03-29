@@ -22,6 +22,12 @@ There a some pieces of tech, built on Rust that I'd like to understand.
 
 ### Random Findings
 
+Find a process occupying a port
+
+```bash
+netstat -vanp tcp | grep 7878
+```
+
 <details>
 <summary>Closure Syntax</summary>
 
