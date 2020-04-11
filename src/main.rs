@@ -5,5 +5,5 @@ pub mod import_me {
 }
 
 fn main() {
-    println!("Hello, world!");
+    println!("Hello, world, from main!");
 }

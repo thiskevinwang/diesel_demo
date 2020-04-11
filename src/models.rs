@@ -1,5 +1,6 @@
 // ❓ how does `super::schema` point to
 // src/schema.rs?
+use super::chrono::NaiveDateTime;
 use super::schema::posts;
 
 /**
@@ -19,6 +20,13 @@ pub struct Post {
     pub title: String,
     pub body: String,
     pub published: bool,
+    /**
+     * | Rust        | SQL              |
+     * | :---------- | :--------------- |
+     * | i32         | INTEGER          |
+     * | Option<i32> | INTEGER NOT NULL |
+     */
+    pub user_id: Option<i32>,
 }
 
 /**
@@ -29,4 +37,14 @@ pub struct Post {
 pub struct NewPost<'a> {
     pub title: &'a str,
     pub body: &'a str,
+    pub user_id: &'a i32,
+}
+
+#[derive(Queryable)]
+pub struct User {
+    pub id: i32,
+    pub updated_at: NaiveDateTime,
+    pub deleted_at: NaiveDateTime,
+    pub name: String,
+    pub username: String,
 }

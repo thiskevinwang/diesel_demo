@@ -10,6 +10,7 @@ edition = "2018"
 actix = "0.10.0-alpha.1"
 actix-web = "2.0"
 actix-rt = "1.0"
+chrono = "0.4"
 diesel = { version = "1.0.0", features = ["postgres"] }
 dotenv = "0.9.0"
 listenfd = "0.3"
