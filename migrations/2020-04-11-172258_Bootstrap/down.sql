@@ -1,0 +1,17 @@
+ALTER TABLE "Attempts" DROP CONSTRAINT "FK_ad03914e106de8bc2ada3e02272";
+
+ALTER TABLE "Comments" DROP CONSTRAINT "FK_aa80cd9ae4c341f0aeba2401b10";
+
+ALTER TABLE "Reactions" DROP CONSTRAINT "FK_a664faf81e5027a396a53f849ad";
+
+ALTER TABLE "Reactions" DROP CONSTRAINT "FK_a4ae133ce0466e61a59e030cd6d";
+
+DROP TABLE "Attempts";
+
+DROP TABLE "Users";
+
+DROP TABLE "Comments";
+
+DROP TABLE "Reactions";
+
+DROP TYPE "Reactions_variant_enum";
