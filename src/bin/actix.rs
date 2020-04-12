@@ -1,26 +1,52 @@
-#[macro_use]
 extern crate diesel;
 extern crate dotenv;
 extern crate rust_server;
 
 use self::rust_server::*;
-
-use diesel::pg::PgConnection;
-use diesel::prelude::*;
-use dotenv::dotenv;
-use std::env;
+use serde::{Deserialize, Serialize};
 
 /* ====================================== */
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use listenfd::ListenFd;
 use std::sync::Mutex;
 
+mod get_user_1;
+use get_user_1::get_user_by_id;
+
 // This struct represents state
 struct AppStateWithCounter {
     counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
 }
 
-use self::models::{NewPost, Post};
+/// This struct represents path params,
+/// - Rust/Actix: "/users/{id}"
+/// - Node/Express: "/users/:id"
+#[derive(Debug, Deserialize, Serialize)]
+struct Info {
+    id: String,
+}
+/// extract path info using serde
+async fn user_by_id(info: web::Path<Info>) -> String {
+    println!("Welcome {}!", info.id);
+
+    let id = &info.id;
+    // trim input
+    // parse it
+    let test = id.trim().parse::<u32>();
+    // return if test is not an integer
+    match test {
+        Ok(ok) => println!("You've specified: {}\n", ok),
+        Err(e) => return format!("Error: ({})", e),
+    };
+
+    let test = test.unwrap();
+
+    let user = get_user_by_id(test as i32);
+
+    format!("{:#?}", user)
+}
+
+use self::models::{NewUser, User};
 /// a request handler
 /// an async function that accepts zero or more params that
 /// can be extracted from a request (ie, `impl FromRequest`)
@@ -35,61 +61,6 @@ async fn index(data: web::Data<AppStateWithCounter>) -> impl Responder {
     format!("Request number: {}", counter)
     // May get response:
     // App data is not configured, to configure use App::data()
-}
-
-extern crate rustc_serialize;
-use self::rustc_serialize::json;
-#[derive(RustcDecodable, RustcEncodable)]
-pub struct MyLittleJSon {
-    uri: String,
-    query_string: String,
-}
-
-async fn again(req: HttpRequest) -> impl Responder {
-    println!("head {:?}", req.head());
-    println!("uri {:?}", req.uri());
-    println!("method {:?}", req.method());
-    println!("version {:?}", req.version());
-    println!("headers {:?}", req.headers());
-    println!("path {:?}", req.path());
-    println!("query_string {:?}", req.query_string());
-    println!("connection_info {:?}", req.connection_info());
-    // let conn = establish_connection();
-
-    // let new_post = NewPost {
-    //     title: "test",
-    //     body: "testbody",
-    // };
-
-    // use schema::posts;
-    // let post: Post = diesel::insert_into(posts::table)
-    //     .values(&new_post)
-    //     .get_result(&conn)
-    //     .expect("Error save new post");
-
-    let connection = establish_connection();
-    use rust_server::schema::posts::dsl::*;
-    let results = posts
-        // .filter(published.eq(true))
-        .limit(5)
-        .load::<Post>(&connection)
-        .expect("Error loading posts");
-    let object = MyLittleJSon {
-        uri: format!("{}", req.uri()),
-        query_string: format!("{}", results.len()),
-    };
-    let encoded = json::encode(&object).unwrap();
-
-    // let object = MyLittleJSon {
-    //     uri: format!("{}", req.uri()),
-    //     query_string: format!("{}", req.query_string()),
-    // };
-    // let encoded = json::encode(&object).unwrap();
-    let res = HttpResponse::Ok()
-        .content_type("application/javascript")
-        .body(encoded);
-    println!("res {:?}", res);
-    res
 }
 
 /// - Create an `App` instance and register the request handler with
@@ -116,10 +87,10 @@ async fn main() -> std::io::Result<()> {
     let mut server = HttpServer::new(move || {
         // move counter into the closure
         App::new()
-            // .data(data.clone()) ??
             .app_data(data.clone())
             .route("/", web::get().to(index))
-            .route("/again", web::get().to(again))
+            // .route("/users/{id}", web::get().to(user_by_id))
+            .service(web::scope("/users").route("{id}", web::get().to(user_by_id)))
             .service(web::scope("/app").route("hi", web::get().to(index)))
     });
 
