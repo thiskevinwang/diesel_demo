@@ -34,7 +34,7 @@ table! {
         deleted -> Nullable<Timestamp>,
         #[sql_name = "type"]
         type_ -> Varchar,
-        variant -> Reactions_variant_enum,
+        variant -> Varchar,
         commentId -> Int4,
         userId -> Int4,
     }
