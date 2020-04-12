@@ -1,6 +1,7 @@
 use super::chrono::NaiveDateTime;
 use super::diesel_derive_enum::DbEnum;
 use super::schema::{Attempts, Comments, Reactions, Users};
+use serde::{Deserialize, Serialize};
 
 #[derive(Queryable)]
 pub struct Attempt {
@@ -50,7 +51,7 @@ pub struct Reaction {
     pub userId: i32,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Serialize)]
 pub struct User {
     pub id: i32,
     pub created: NaiveDateTime,
