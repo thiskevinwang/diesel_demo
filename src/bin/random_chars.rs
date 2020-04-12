@@ -1,5 +1,3 @@
-extern crate rand;
-
 use rand::distributions::Alphanumeric;
 use rand::prelude::*;
 use std::iter;
