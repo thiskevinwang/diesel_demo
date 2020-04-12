@@ -28,61 +28,40 @@ Find a process occupying a port
 netstat -vanp tcp | grep 7878
 ```
 
-<details>
-<summary>Closure Syntax</summary>
-
-```ts
-// TypeScript
-function main(): void {
-  const foo = "weird";
-
-  // ES6 Arrow Function
-  ((val: string) => {
-    console.log(`${val}, self-calling arrow function`);
-  })(foo);
-}
-// weird, self-calling arrow function
-```
+#### Error with `<SCHEMA>.load::<MODEL>()`
 
 ```rust
-// Rust
-fn main() -> () {
-    let foo = "weird";
-
-    // Rust Closure/Lambda
-    (|val: &str| {
-        println!("{}, self-calling closure/lambda", val);
-    })(foo);
-}
-// weird, self-calling closure/lambda
+let results = Users
+    .filter(id.eq(1))
+    .limit(1)
+    .load::<User>(&connection)
+    .expect("Error loading User");
 ```
 
-```rust
-// Rust
-// (not self-calling)
-use std::time::{Instant};
+The error:
 
-fn main() {
-    let start = Instant::now();
-    let duration = start.elapsed();
-
-    let myClosure = ||println!("Time elapsed: {:?}", duration);
-    myClosure();
-}
-// Time elapsed: 925ns
+```
+the trait `diesel::Queryable<diesel::sql_types::Timestamp,
+diesel::pg::Pg>` is not implemented for
+`chrono::naive::datetime::NaiveDateTime`
 ```
 
-</details>
+Diesel Github Issue [#968](https://github.com/diesel-rs/diesel/issues/968), & [fix](https://github.com/diesel-rs/diesel/issues/968#issuecomment-311046651)
 
-<details open>
-<summary>Node/Rust similarities</summary>
- 
-|Node|Rust|
-|:---|:---|
-|npm|cargo|
-|nodemon|[cargo-watch](https://docs.rs/crate/cargo-watch/7.0.2)|
+```diff
+- diesel = { version = "1.4.4", features = ["postgres"] }
++ diesel = { version = "1.4.4", features = ["postgres", "chrono"] }
+```
 
-</details>
+#### `Diesel` doesn't handle Postgres Enums
+
+This might help
+
+```diff
+diff --git
++ diesel-derive-enum = { version = "0.4", features = ["postgres"] }
+@@ ln @@
+```
 
 ## Resources
 
