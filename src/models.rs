@@ -1,4 +1,5 @@
 use super::chrono::NaiveDateTime;
+use super::diesel_derive_enum::DbEnum;
 use super::schema::{Attempts, Comments, Reactions, Users};
 
 #[derive(Queryable)]
@@ -26,7 +27,8 @@ pub struct Comment {
     pub userId: i32,
 }
 
-pub enum Reactions_variant_enum {
+#[derive(Debug, DbEnum)]
+pub enum ReactionsVariantEnum {
     Like,
     Love,
     Haha,
@@ -36,17 +38,19 @@ pub enum Reactions_variant_enum {
     None,
 }
 
+#[derive(Queryable)]
 pub struct Reaction {
     pub id: i32,
     pub created: NaiveDateTime,
     pub updated: Option<NaiveDateTime>,
     pub deleted: Option<NaiveDateTime>,
     pub type_: String,
-    pub variant: Reactions_variant_enum,
+    pub variant: ReactionsVariantEnum,
     pub commentId: i32,
     pub userId: i32,
 }
 
+#[derive(Queryable)]
 pub struct User {
     pub id: i32,
     pub created: NaiveDateTime,
@@ -61,4 +65,5 @@ pub struct User {
     pub avatar_url: Option<String>,
     pub last_password_request: Option<NaiveDateTime>,
     pub verified_date: Option<NaiveDateTime>,
+    pub banned: Option<bool>,
 }
