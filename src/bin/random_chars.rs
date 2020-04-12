@@ -4,7 +4,7 @@ use std::io::stdin;
 use std::iter;
 use std::time::Instant;
 
-fn generate_password_from_length(length: usize) -> String {
+pub fn generate_password_from_length(length: usize) -> String {
     let mut rng = thread_rng();
     iter::repeat(())
         .map(|()| rng.sample(Alphanumeric))
