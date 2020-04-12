@@ -14,4 +14,4 @@ DROP TABLE "Comments";
 
 DROP TABLE "Reactions";
 
-DROP TYPE "Reactions_variant_enum";
+-- DROP TYPE "Reactions_variant_enum";

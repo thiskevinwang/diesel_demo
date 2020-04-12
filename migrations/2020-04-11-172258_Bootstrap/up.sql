@@ -1,5 +1,5 @@
-CREATE TYPE "Reactions_variant_enum" AS ENUM
-('Like', 'Love', 'Haha', 'Wow', 'Sad', 'Angry', 'None');
+-- CREATE TYPE "Reactions_variant_enum" AS ENUM
+-- ('Like', 'Love', 'Haha', 'Wow', 'Sad', 'Angry', 'None');
 
 CREATE TABLE "Reactions"
 (
@@ -8,7 +8,8 @@ CREATE TABLE "Reactions"
   "updated" TIMESTAMP DEFAULT now(),
   "deleted" TIMESTAMP,
   "type" character varying NOT NULL DEFAULT 'Reaction',
-  "variant" "Reactions_variant_enum" NOT NULL DEFAULT 'None',
+  -- "variant" "Reactions_variant_enum" NOT NULL DEFAULT 'None',
+  "variant" character varying NOT NULL DEFAULT 'None',
   "commentId" integer NOT NULL,
   "userId" integer NOT NULL,
   CONSTRAINT "PK_8e7a9226a42a2a796ce5993a5a2" PRIMARY KEY ("id")
