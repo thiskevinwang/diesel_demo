@@ -2,6 +2,8 @@ extern crate diesel;
 extern crate dotenv;
 extern crate rust_server;
 
+// This brings `.limit()`, `.filter()` and other methods into scope
+use self::diesel::prelude::*;
 use self::rust_server::*;
 use serde::{Deserialize, Serialize};
 
@@ -26,24 +28,42 @@ struct Info {
     id: String,
 }
 /// extract path info using serde
-async fn user_by_id(info: web::Path<Info>) -> String {
-    println!("Welcome {}!", info.id);
+async fn user_by_id(info: web::Path<Info>) -> impl Responder {
+    println!("Fetching user {}", info.id);
 
     let id = &info.id;
     // trim input
     // parse it
-    let test = id.trim().parse::<u32>();
+    let trimmed_id = id.trim().parse::<u32>();
     // return if test is not an integer
-    match test {
-        Ok(ok) => println!("You've specified: {}\n", ok),
-        Err(e) => return format!("Error: ({})", e),
-    };
+    // match test {
+    //     Ok(ok) => println!("You've specified: {}\n", ok),
+    //     Err(e) => return web::Json(e),
+    // };
 
-    let test = test.unwrap();
+    let trimmed_id = trimmed_id.unwrap();
 
-    let user = get_user_by_id(test as i32);
+    let user = get_user_by_id(trimmed_id as i32);
 
-    format!("{:#?}", user)
+    web::Json(user)
+    // format!("{:#?}", user)
+}
+
+async fn get_users() -> impl Responder {
+    println!("Fetching all users");
+    use rust_server::schema::Users::dsl::*;
+    let connection = establish_connection();
+
+    let results = Users
+        .limit(10)
+        .load::<User>(&connection)
+        .expect("Error loading users");
+
+    let mut vec: Vec<User> = Vec::new();
+    for user in results {
+        vec.push(user);
+    }
+    web::Json(vec)
 }
 
 use self::models::{NewUser, User};
@@ -85,13 +105,11 @@ async fn main() -> std::io::Result<()> {
 
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
-        // move counter into the closure
         App::new()
             .app_data(data.clone())
             .route("/", web::get().to(index))
-            // .route("/users/{id}", web::get().to(user_by_id))
+            .route("/users", web::get().to(get_users))
             .service(web::scope("/users").route("{id}", web::get().to(user_by_id)))
-            .service(web::scope("/app").route("hi", web::get().to(index)))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
