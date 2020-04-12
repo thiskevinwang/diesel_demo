@@ -50,7 +50,7 @@ pub struct Reaction {
     pub userId: i32,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct User {
     pub id: i32,
     pub created: NaiveDateTime,
@@ -66,4 +66,14 @@ pub struct User {
     pub last_password_request: Option<NaiveDateTime>,
     pub verified_date: Option<NaiveDateTime>,
     pub banned: Option<bool>,
+}
+
+#[derive(Insertable)]
+#[table_name = "Users"]
+pub struct NewUser {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub first_name: String,
+    pub last_name: String,
 }
