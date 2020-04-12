@@ -1294,6 +1294,7 @@ dependencies = [
  "diesel-derive-enum",
  "dotenv",
  "listenfd",
+ "rand",
  "rustc-serialize",
  "uuid 0.8.1",
 ]
