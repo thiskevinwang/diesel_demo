@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate diesel;
+extern crate chrono;
 extern crate dotenv;
 
 use diesel::pg::PgConnection;
@@ -31,12 +32,18 @@ pub fn establish_connection() -> PgConnection {
 }
 
 use self::models::{NewPost, Post};
-pub fn create_post<'a>(conn: &PgConnection, title: &'a str, body: &'a str) -> Post {
+pub fn create_post<'a>(
+	conn: &PgConnection,
+	title: &'a str,
+	body: &'a str,
+	user_id: &'a i32,
+) -> Post {
 	use schema::posts;
 
 	let new_post = NewPost {
 		title: title,
 		body: body,
+		user_id: user_id,
 	};
 
 	diesel::insert_into(posts::table)

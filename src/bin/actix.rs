@@ -1,3 +1,16 @@
+#[macro_use]
+extern crate diesel;
+extern crate dotenv;
+extern crate rust_server;
+
+use self::rust_server::*;
+
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
+use dotenv::dotenv;
+use std::env;
+
+/* ====================================== */
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use listenfd::ListenFd;
 use std::sync::Mutex;
@@ -7,6 +20,7 @@ struct AppStateWithCounter {
     counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
 }
 
+use self::models::{NewPost, Post};
 /// a request handler
 /// an async function that accepts zero or more params that
 /// can be extracted from a request (ie, `impl FromRequest`)
@@ -23,30 +37,59 @@ async fn index(data: web::Data<AppStateWithCounter>) -> impl Responder {
     // App data is not configured, to configure use App::data()
 }
 
-async fn index2(req: HttpRequest) -> impl Responder {
-    println!("wtf {:?}", req.connection_info());
-    /* req */
-    // HttpRequest HTTP/1.1 GET:/again
-    //     headers:
-    //         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
-    //         "dnt": "1"
-    //         "sec-fetch-user": "?1"
-    //         "accept-language": "en-US,en;q=0.9"
-    //         "sec-fetch-mode": "navigate"
-    //         "sec-fetch-site": "none"
-    //         "accept-encoding": "gzip, deflate, br"
-    //         "host": "localhost:7878"
-    //         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"
-    //         "connection": "keep-alive"
-    //         "upgrade-insecure-requests": "1"
-    //         "sec-fetch-dest": "document"
-    /* req.connection_info() */
-    // ConnectionInfo { scheme: "http", host: "localhost:7878", remote: None, peer: Some("127.0.0.1:61989") }
-    /* req.connection_info().scheme() */
-    // "http"
-    /* req.connection_info().host() */
-    // "localhost:7878"
-    HttpResponse::Ok().body("Hello again!")
+extern crate rustc_serialize;
+use self::rustc_serialize::json;
+#[derive(RustcDecodable, RustcEncodable)]
+pub struct MyLittleJSon {
+    uri: String,
+    query_string: String,
+}
+
+async fn again(req: HttpRequest) -> impl Responder {
+    println!("head {:?}", req.head());
+    println!("uri {:?}", req.uri());
+    println!("method {:?}", req.method());
+    println!("version {:?}", req.version());
+    println!("headers {:?}", req.headers());
+    println!("path {:?}", req.path());
+    println!("query_string {:?}", req.query_string());
+    println!("connection_info {:?}", req.connection_info());
+    // let conn = establish_connection();
+
+    // let new_post = NewPost {
+    //     title: "test",
+    //     body: "testbody",
+    // };
+
+    // use schema::posts;
+    // let post: Post = diesel::insert_into(posts::table)
+    //     .values(&new_post)
+    //     .get_result(&conn)
+    //     .expect("Error save new post");
+
+    let connection = establish_connection();
+    use rust_server::schema::posts::dsl::*;
+    let results = posts
+        // .filter(published.eq(true))
+        .limit(5)
+        .load::<Post>(&connection)
+        .expect("Error loading posts");
+    let object = MyLittleJSon {
+        uri: format!("{}", req.uri()),
+        query_string: format!("{}", results.len()),
+    };
+    let encoded = json::encode(&object).unwrap();
+
+    // let object = MyLittleJSon {
+    //     uri: format!("{}", req.uri()),
+    //     query_string: format!("{}", req.query_string()),
+    // };
+    // let encoded = json::encode(&object).unwrap();
+    let res = HttpResponse::Ok()
+        .content_type("application/javascript")
+        .body(encoded);
+    println!("res {:?}", res);
+    res
 }
 
 /// - Create an `App` instance and register the request handler with
@@ -76,7 +119,7 @@ async fn main() -> std::io::Result<()> {
             // .data(data.clone()) ??
             .app_data(data.clone())
             .route("/", web::get().to(index))
-            .route("/again", web::get().to(index2))
+            .route("/again", web::get().to(again))
             .service(web::scope("/app").route("hi", web::get().to(index)))
     });
 

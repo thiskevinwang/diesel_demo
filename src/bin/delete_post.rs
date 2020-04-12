@@ -1,13 +1,13 @@
 extern crate diesel;
-extern crate diesel_demo;
+extern crate rust_server;
 
 use self::diesel::prelude::*;
-use self::diesel_demo::*;
+use self::rust_server::*;
 use std::env::args;
 
 /// run with `cargo run --bin delete_post <title>
 fn main() {
-    use diesel_demo::schema::posts::dsl::*;
+    use rust_server::schema::posts::dsl::*;
 
     let target = args().nth(1).expect("Expected a target to match against");
     let pattern = format!("%{}%", target);

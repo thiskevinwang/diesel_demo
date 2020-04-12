@@ -1,8 +1,16 @@
 extern crate diesel;
-extern crate diesel_demo;
+extern crate rust_server;
 
-use self::diesel_demo::*;
+use self::rust_server::*;
 use std::io::{stdin, Read};
+
+fn custom_unwrap(potentially_null_user_id: Option<i32>) -> i32 {
+    match potentially_null_user_id {
+        Some(1) => 1,
+        Some(whatever) => whatever,
+        None => 0,
+    }
+}
 
 /// run with `cargo run --bin write_post`
 fn main() {
@@ -18,10 +26,16 @@ fn main() {
         title, EOF
     );
     let mut body = String::new();
+    let user_id = 1;
     stdin().read_to_string(&mut body).unwrap();
 
-    let post = create_post(&connection, title, &body);
-    println!("\nSaved draft {} with id {}", title, post.id);
+    let post = create_post(&connection, title, &body, &user_id);
+    println!(
+        "\nSaved draft {} with id {}. user_id:{}",
+        title,
+        post.id,
+        custom_unwrap(post.user_id),
+    );
 }
 
 #[cfg(not(windows))]
