@@ -5,6 +5,7 @@ extern crate rust_server;
 use self::diesel::*;
 use self::models::*;
 use self::rust_server::*;
+use bcrypt::{hash, DEFAULT_COST};
 
 mod random_chars;
 use random_chars::generate_password_from_length;
@@ -17,6 +18,8 @@ fn main() {
     let chars = generate_password_from_length(8);
     println!("{}", chars);
 
+    let hashed = hash(generate_password_from_length(8), DEFAULT_COST).unwrap();
+
     // use self::models::NewUser;
     let new_user = NewUser {
         username: format!(
@@ -25,7 +28,7 @@ fn main() {
             generate_password_from_length(4)
         ),
         email: format!("{}@test.com", generate_password_from_length(8)),
-        password: generate_password_from_length(8),
+        password: hashed,
         first_name: String::from("Kevin"),
         last_name: String::from("Wang"),
     };
