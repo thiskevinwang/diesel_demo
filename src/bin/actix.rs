@@ -1,12 +1,72 @@
+extern crate diesel;
+extern crate dotenv;
+extern crate rust_server;
+
+// This brings `.limit()`, `.filter()` and other methods into scope
+use self::diesel::prelude::*;
+use self::rust_server::*;
+use serde::{Deserialize, Serialize};
+
+/* ====================================== */
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use listenfd::ListenFd;
 use std::sync::Mutex;
+
+mod get_user_1;
+use get_user_1::get_user_by_id;
 
 // This struct represents state
 struct AppStateWithCounter {
     counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
 }
 
+/// This struct represents path params,
+/// - Rust/Actix: "/users/{id}"
+/// - Node/Express: "/users/:id"
+#[derive(Debug, Deserialize, Serialize)]
+struct Info {
+    id: String,
+}
+/// extract path info using serde
+async fn user_by_id(info: web::Path<Info>) -> impl Responder {
+    println!("Fetching user {}", info.id);
+
+    let id = &info.id;
+    // trim input
+    // parse it
+    let trimmed_id = id.trim().parse::<u32>();
+    // return if test is not an integer
+    // match test {
+    //     Ok(ok) => println!("You've specified: {}\n", ok),
+    //     Err(e) => return web::Json(e),
+    // };
+
+    let trimmed_id = trimmed_id.unwrap();
+
+    let user = get_user_by_id(trimmed_id as i32);
+
+    web::Json(user)
+    // format!("{:#?}", user)
+}
+
+async fn get_users() -> impl Responder {
+    println!("Fetching all users");
+    use rust_server::schema::Users::dsl::*;
+    let connection = establish_connection();
+
+    let results = Users
+        .limit(10)
+        .load::<User>(&connection)
+        .expect("Error loading users");
+
+    let mut vec: Vec<User> = Vec::new();
+    for user in results {
+        vec.push(user);
+    }
+    web::Json(vec)
+}
+
+use self::models::{NewUser, User};
 /// a request handler
 /// an async function that accepts zero or more params that
 /// can be extracted from a request (ie, `impl FromRequest`)
@@ -21,32 +81,6 @@ async fn index(data: web::Data<AppStateWithCounter>) -> impl Responder {
     format!("Request number: {}", counter)
     // May get response:
     // App data is not configured, to configure use App::data()
-}
-
-async fn index2(req: HttpRequest) -> impl Responder {
-    println!("wtf {:?}", req.connection_info());
-    /* req */
-    // HttpRequest HTTP/1.1 GET:/again
-    //     headers:
-    //         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
-    //         "dnt": "1"
-    //         "sec-fetch-user": "?1"
-    //         "accept-language": "en-US,en;q=0.9"
-    //         "sec-fetch-mode": "navigate"
-    //         "sec-fetch-site": "none"
-    //         "accept-encoding": "gzip, deflate, br"
-    //         "host": "localhost:7878"
-    //         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"
-    //         "connection": "keep-alive"
-    //         "upgrade-insecure-requests": "1"
-    //         "sec-fetch-dest": "document"
-    /* req.connection_info() */
-    // ConnectionInfo { scheme: "http", host: "localhost:7878", remote: None, peer: Some("127.0.0.1:61989") }
-    /* req.connection_info().scheme() */
-    // "http"
-    /* req.connection_info().host() */
-    // "localhost:7878"
-    HttpResponse::Ok().body("Hello again!")
 }
 
 /// - Create an `App` instance and register the request handler with
@@ -71,13 +105,11 @@ async fn main() -> std::io::Result<()> {
 
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
-        // move counter into the closure
         App::new()
-            // .data(data.clone()) ??
             .app_data(data.clone())
             .route("/", web::get().to(index))
-            .route("/again", web::get().to(index2))
-            .service(web::scope("/app").route("hi", web::get().to(index)))
+            .route("/users", web::get().to(get_users))
+            .service(web::scope("/users").route("{id}", web::get().to(user_by_id)))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {

@@ -1,14 +1,14 @@
 extern crate diesel;
-extern crate diesel_demo;
+extern crate rust_server;
 
 use self::diesel::prelude::*;
-use self::diesel_demo::*;
+use self::rust_server::*;
 use self::models::Post;
 use std::env::args;
 
 fn main() {
     // import table columns here, like 'body' or 'published'
-    use diesel_demo::schema::posts::dsl::{posts, published};
+    use rust_server::schema::posts::dsl::{posts, published};
 
     let id = args()
         .nth(1)
